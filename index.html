@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador FLUX Vercel</title>
+    <style>
+        body { font-family: sans-serif; background: #111; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 50px 20px; }
+        h1 { color: #a855f7; margin-bottom: 20px; }
+        .container { width: 100%; max-width: 600px; text-align: center; }
+        input { width: 100%; padding: 15px; border-radius: 8px; border: none; margin-bottom: 10px; font-size: 16px; background: #222; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #a855f7; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #9333ea; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        #result { margin-top: 20px; }
+        img { max-width: 100%; border-radius: 10px; box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); display: block; margin: 0 auto; }
+        .download-btn { display: inline-block; margin-top: 15px; color: #a855f7; text-decoration: none; border: 1px solid #a855f7; padding: 10px 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>✨ Gerador Flux.1</h1>
+        <input type="text" id="promptInput" placeholder="Descreva sua imagem (Ex: Gato cyberpunk neon)...">
+        <button id="generateBtn" onclick="gerarImagem()">Gerar Imagem</button>
+        <p id="status" style="color: #888; margin-top: 10px;"></p>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function gerarImagem() {
+            const prompt = document.getElementById('promptInput').value;
+            const btn = document.getElementById('generateBtn');
+            const status = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+
+            if (!prompt) return alert('Digite um prompt!');
+
+            // Estado de Carregamento
+            btn.disabled = true;
+            btn.innerText = "Gerando (pode levar 10s)...";
+            status.innerText = "Conectando ao SiliconFlow...";
+            resultDiv.innerHTML = "";
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // Sucesso
+                status.innerText = "";
+                resultDiv.innerHTML = `
+                    <img src="${data.url}" alt="Imagem Gerada">
+                    <a href="${data.url}" target="_blank" class="download-btn">Baixar em Alta Resolução</a>
+                `;
+
+            } catch (error) {
+                status.innerText = "Erro: " + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Gerar Imagem";
+            }
+        }
+    </script>
+</body>
+</html>
